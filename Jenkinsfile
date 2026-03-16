@@ -1,41 +1,54 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')  // Your Jenkins SonarQube token
+    }
+
     stages {
 
-        stage('Clone Code') {
+        stage('Checkout Code') {
             steps {
+                echo "Cloning the project from GitHub"
                 git branch: 'main', url: 'https://github.com/ahmadali-114/Practice-Project.git'
             }
         }
 
         stage('SonarQube Scan') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh """
-                    /opt/sonar-scanner/bin/sonar-scanner \
-                    -Dsonar.projectKey=practice-project \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://10.0.2.15:9000
-                    """
-                }
+                echo "Running SonarQube analysis"
+                sh """
+                /opt/sonar-scanner/bin/sonar-scanner \
+                -Dsonar.projectKey=practice-project \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=http://10.0.2.15:9000 \
+                -Dsonar.login=${SONAR_TOKEN}
+                """
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t practice-html-site .'
+                echo "Building Docker image"
+                sh "docker build -t practice-project:latest ."
             }
         }
 
-        stage('Deploy Website') {
+        stage('Run Docker Container') {
             steps {
-                sh '''
-                docker stop html-site || true
-                docker rm html-site || true
-                docker run -d -p 8085:80 --name html-site practice-html-site
-                '''
+                echo "Running Docker container locally"
+                sh """
+                docker rm -f practice-project || true
+                docker run -d --name practice-project -p 8080:80 practice-project:latest
+                """
             }
+        }
+
+    }
+
+    post {
+        always {
+            echo "Pipeline finished. Check SonarQube and your app at http://10.0.2.15:8080"
         }
     }
 }
