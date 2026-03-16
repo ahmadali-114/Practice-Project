@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        sonarQubeScanner 'sonar-scanner'
-    }
-
     stages {
 
         stage('Clone Code') {
@@ -23,7 +19,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t html-practice-site .'
+                sh 'docker build -t practice-html-site .'
             }
         }
 
@@ -32,7 +28,7 @@ pipeline {
                 sh '''
                 docker stop html-site || true
                 docker rm html-site || true
-                docker run -d -p 8085:80 --name html-site html-practice-site
+                docker run -d -p 8085:80 --name html-site practice-html-site
                 '''
             }
         }
