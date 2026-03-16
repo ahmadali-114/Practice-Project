@@ -39,7 +39,7 @@ pipeline {
                 echo "Running Docker container locally"
                 sh """
                 docker rm -f practice-project || true
-                docker run -d --name practice-project -p 8080:80 practice-project:latest
+                docker run -d --name practice-project -p 0:80 practice-project:latest
                 """
             }
         }
