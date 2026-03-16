@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        sonarRunner 'sonar-scanner'
+    }
+
     stages {
 
         stage('Clone Code') {
@@ -12,7 +16,12 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh 'sonar-scanner'
+                    sh """
+                    sonar-scanner \
+                    -Dsonar.projectKey=practice-project \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://10.0.2.15:9000
+                    """
                 }
             }
         }
@@ -32,6 +41,5 @@ pipeline {
                 '''
             }
         }
-
     }
 }
